@@ -1,0 +1,4 @@
+import React from 'react';
+import {useSlideViewModel} from '../view-model/context.jsx';
+import {chartMarkup} from '../../assets/huawei-chart-view.mjs';
+export function makeSemanticHuaweiChart(page){return function HuaweiChart(props){const vm=useSlideViewModel();return <section className="slide hw-chart-slide" data-layout={page.layout} data-vm-slide-id={vm.id} data-vm-slide-key={vm.key} data-vm-layout={page.key} data-vm-index={vm.index} data-theme-pack="theme17" style={{background:'#fff'}}><div data-native-chart={page.mode} data-prop-controls="[]" data-prop-defaults={JSON.stringify(page.defaultProps)} style={{position:'absolute',left:0,top:0,width:1920,height:1080,transform:'scale(var(--deck-scale))',transformOrigin:'top left'}}><div className="hw-chart-canvas" style={{transform:'scale(1.5)',transformOrigin:'top left'}} dangerouslySetInnerHTML={{__html:chartMarkup(props,page.mode)}}/></div></section>;};}

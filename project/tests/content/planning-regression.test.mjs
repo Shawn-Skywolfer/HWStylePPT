@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {normalizeDocument} from '../../scripts/content/model.mjs';import {hwCandidates} from '../../scripts/content/hw-plan.mjs';import {hwDefinition} from '../../src/components/hw/contracts.mjs';
+import {validateHwPlanningCapacity,validateHwProps,hwMarkup} from '../../assets/hw-template-view.mjs';import fixtures from './hw-original-fixtures.json' with {type:'json'};
+test('the original HW geometry cannot make over-capacity prose look ready in the mind map',()=>{
+ const d=normalizeDocument({title:'容量边界',slides:[{slideId:'dense',role:'body',title:'八项事实需要完整呈现',conclusion:'保留全部细节。',blocks:Array.from({length:8},(_,i)=>({blockId:'b'+i,label:'事实'+i,text:('这是第'+i+'项事实，完整保留具体责任、执行条件和管理动作。').repeat(9),evidence:'访谈'+i}))}]}),before=structuredClone(d);assert.equal(hwCandidates(d.slides[0],d).length,0);assert.deepEqual(d,before);
+ const raw=fixtures.find(f=>f.layout==='theme17_content_hw_bento_2x3'&&f.variant==='8'),p=structuredClone(raw.props);p.cards[0].text='完整事实不能被截断。'.repeat(300);assert.doesNotThrow(()=>validateHwProps(hwDefinition(raw.layout),p),'manual editing retains its content even when automatic planning rejects that size');assert.throws(()=>validateHwPlanningCapacity(hwDefinition(raw.layout),p),/HW_CONTENT_OVERFLOW/);assert.equal(p.cards[0].text.length,3000);
+});
+test('supplied signed baselines use real numbers in the original comparison area and default artwork is unchanged',()=>{
+ const raw=fixtures.find(f=>f.layout==='theme17_content_hw_highlight_compact'&&f.variant==='3'),def=hwDefinition(raw.layout),p=structuredClone(raw.props),plain=hwMarkup(def,p,1);p.cards[0].value=-32;p.baselines=[{blockId:p.cards[0].blockId,value:-21}];const html=hwMarkup(def,p,1);assert.ok(html.includes('基线 -21'));assert.ok(html.includes('data-baseline-value="-21"'));assert.ok(html.includes('data-baseline-value="-32"'));assert.equal((html.match(/data-baseline-value=/g)||[]).length,2);delete p.baselines;p.cards[0].value=raw.props.cards[0].value;assert.equal(hwMarkup(def,p,1),plain);
+});

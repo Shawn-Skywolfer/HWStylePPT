@@ -1,0 +1,3 @@
+import fs from 'node:fs';
+import {defaultBoard} from '../../scripts/content/board-model.mjs';
+export function semanticFixture(){const doc=JSON.parse(fs.readFileSync(new URL('../../examples/content-demo.json',import.meta.url),'utf8'));const block=doc.slides[2].blocks[1];block.text='验收口径不统一，会造成返工和交付波动。例如，在跨团队协作中，研发侧常以“功能按需求实现”作为验收标准，业务侧却以“实际使用效果达标”为准；双方口径长期不对齐，交付物被反复退回修改，返工随之增多，交付节奏与质量也出现波动。';block.evidence='参考：吉恩·金、凯文·贝尔、乔治·斯帕福德合著《凤凰项目：一个IT运维的传奇故事》——书中将跨职能交接中标准不清视为计划外工作与返工的主要成因。';doc.slides[2].board=defaultBoard(doc.slides[2]);doc.slides[2].board.edges[0].label='因果';doc.slides[2].board.edges[1].label='闭环';return doc;}

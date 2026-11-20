@@ -1,0 +1,416 @@
+/* All design-layout body headings share the original HW title coordinates.
+ * Imported pages use a 1920 × 1080 canvas (1.5 × the 1280 original).
+ * Fixed positioning anchors to the transformed imported canvas, not its
+ * differently positioned legacy header wrappers. Covers/chapters are excluded.
+ */
+/* Methodology keeps its approved right-hand cards. Long left-hand copy must
+ * wrap inside the existing left column instead of growing underneath them. */
+.aic-mth .mth-steps {
+  right: calc(var(--pad) + 760px + 40px);
+  width: auto;
+  min-width: 0;
+}
+.aic-mth .mth-step {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.aic-mth .mth-step u,
+.aic-mth .mth-step b {
+  overflow-wrap: anywhere;
+}
+.imported-theme-root[data-theme-key="theme17"]:has(>.theme17-body-marker) h2 {
+  position: fixed !important;
+  left: 96px !important;
+  top: 60px !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 1530px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  transform: translate(var(--hw-title-offset-x,0px),var(--hw-title-offset-y,0px)) !important;
+  font-family: Arial,'Microsoft YaHei',sans-serif !important;
+  font-size: 51px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -.02em !important;
+  text-align: left !important;
+  white-space: normal !important;
+  display: block !important;
+}
+.imported-theme-root[data-theme-key="theme17"]:has(>.theme17-body-marker) h2 :is(b,strong,em,span){
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  line-height: inherit !important;
+  letter-spacing: inherit !important;
+}
+:is(.hw-content:not(.hw-pack),.hw-chart-canvas) :is([data-content-field="title"],[data-editable-path="chart-meta:title"]){
+  position: absolute !important;
+  left: 64px !important;
+  top: 40px !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 1020px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  transform: none !important;
+  font-family: Arial,'Microsoft YaHei',sans-serif !important;
+  font-size: 34px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -.02em !important;
+  text-align: left !important;
+  white-space: normal !important;
+  display: block !important;
+}
+
+/*
+ * Theme17 adaptive no-media layouts.
+ *
+ * Media slots can be enabled independently. A disabled slot hides only its
+ * own media frame; when an entire media region is disabled, the remaining
+ * analytical content expands into the released space.
+ */
+
+/* Three-card case study: hide only the disabled card's media band. */
+.aic-case .cs-imgbox:has(.cs-deco-fill),
+.aic-case .cs-imgbox:has([data-dashi-media-slot-hidden="true"]) {
+  display: none !important;
+}
+
+.aic-case .cs-card:has(.cs-deco-fill) .cs-meta,
+.aic-case .cs-card:has([data-dashi-media-slot-hidden="true"]) .cs-meta {
+  padding: 34px 30px 28px !important;
+  gap: 14px !important;
+}
+
+.aic-case .cs-card:has(.cs-deco-fill) .cs-name,
+.aic-case .cs-card:has([data-dashi-media-slot-hidden="true"]) .cs-name {
+  font-size: 46px !important;
+}
+
+/* Investor wall: turn the released wall into a conclusion + anchor page. */
+.aic-inv:has(.iv-deco-fill) .iv-wall {
+  display: none !important;
+}
+
+.aic-inv:has(.iv-deco-fill) .iv-meta {
+  top: 35% !important;
+  bottom: 18% !important;
+  height: auto !important;
+  align-items: center !important;
+  gap: 6% !important;
+  padding: 32px 38px !important;
+  border-top: 1.5px solid var(--aic-hair) !important;
+  border-bottom: 1.5px solid var(--aic-hair) !important;
+}
+
+.aic-inv:has(.iv-deco-fill) .iv-lead {
+  width: 66% !important;
+  max-width: none !important;
+  font-size: 34px !important;
+  line-height: 1.45 !important;
+}
+
+.aic-inv:has(.iv-deco-fill) .iv-anchor {
+  width: 28% !important;
+  min-width: 0 !important;
+  padding-left: 36px !important;
+  border-left: 4px solid var(--aic-accent) !important;
+}
+
+/* Enterprise search: make the four-point evidence rail full width. */
+.aic-know:has(.kw-deco-fill) .kw-hero {
+  display: none !important;
+}
+
+.aic-know:has(.kw-deco-fill) .kw-side {
+  width: 90% !important;
+}
+
+.aic-know:has(.kw-deco-fill) .kw-lead {
+  max-width: 76% !important;
+}
+
+.aic-know:has(.kw-deco-fill) .kw-rail {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px 24px !important;
+}
+
+.aic-know:has(.kw-deco-fill) .kw-item {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+/* Healthcare: preserve the insight column and enlarge the chart panel. */
+.aic-health:has(.hl-deco-fill) .hl-hero {
+  display: none !important;
+}
+
+.aic-health:has(.hl-deco-fill) .hl-side {
+  left: 5% !important;
+  width: 28% !important;
+  padding: 34px 28px !important;
+  justify-content: center !important;
+  background: #f7f7f7 !important;
+  border-left: 4px solid var(--aic-accent) !important;
+}
+
+.aic-health:has(.hl-deco-fill) .hl-panel {
+  left: 37% !important;
+  width: 58% !important;
+}
+
+/* Finance: enlarge the donut while retaining a compact insight rail. */
+.aic-fin:has(.fn-deco-fill) .fn-hero {
+  display: none !important;
+}
+
+.aic-fin:has(.fn-deco-fill) .fn-chartwrap {
+  left: 5% !important;
+  width: 61% !important;
+}
+
+.aic-fin:has(.fn-deco-fill) .fn-side {
+  left: 69% !important;
+  width: 26% !important;
+  padding: 34px 26px !important;
+  justify-content: center !important;
+  background: #f7f7f7 !important;
+  border-left: 4px solid var(--aic-accent) !important;
+}
+
+/* Robotics: expand the quantitative distribution into the full canvas. */
+.aic-rob:has(.rb-deco-fill) .rb-hero {
+  display: none !important;
+}
+
+.aic-rob:has(.rb-deco-fill) .rb-left {
+  width: 90% !important;
+}
+
+.aic-rob:has(.rb-deco-fill) .rb-lead {
+  max-width: 76% !important;
+}
+
+/* Autonomous driving: keep the architecture panel dominant. */
+.aic-auto:has(.au-deco-fill) .au-hero {
+  display: none !important;
+}
+
+.aic-auto:has(.au-deco-fill) .au-main {
+  left: 5% !important;
+  width: 61% !important;
+}
+
+.aic-auto:has(.au-deco-fill) .au-side {
+  left: 69% !important;
+  width: 26% !important;
+  padding: 34px 26px !important;
+  justify-content: center !important;
+  background: #f7f7f7 !important;
+  border-left: 4px solid var(--aic-accent) !important;
+}
+
+/* Content generation: move the right-hand argument block to full width. */
+.aic-cgn:has(.cg-deco-fill) .cg-hero {
+  display: none !important;
+}
+
+.aic-cgn:has(.cg-deco-fill) .cg-right {
+  left: 5% !important;
+  width: 90% !important;
+}
+
+.aic-cgn:has(.cg-deco-fill) .cg-lead {
+  max-width: 76% !important;
+}
+
+/* Education: make the left evidence stack the main layout. */
+.aic-edu:has(.ed-deco-fill) .ed-hero {
+  display: none !important;
+}
+
+.aic-edu:has(.ed-deco-fill) .ed-left {
+  width: 90% !important;
+}
+
+.aic-edu:has(.ed-deco-fill) .ed-lead {
+  max-width: 76% !important;
+}
+
+/* Sales & marketing: promote the right-hand content to full width. */
+.aic-sl:has(.sl-deco-fill) .sl-hero {
+  display: none !important;
+}
+
+.aic-sl:has(.sl-deco-fill) .sl-right {
+  left: 5% !important;
+  width: 90% !important;
+}
+
+.aic-sl:has(.sl-deco-fill) .sl-lead {
+  max-width: 76% !important;
+}
+
+/* Low-code: expand the pipeline diagram. */
+.aic-lc:has(.lc-deco-fill) .lc-hero {
+  display: none !important;
+}
+
+.aic-lc:has(.lc-deco-fill) .lc-left {
+  width: 90% !important;
+}
+
+.aic-lc:has(.lc-deco-fill) .lc-lead {
+  max-width: 78% !important;
+}
+
+.aic-lc:has(.lc-deco-fill) .lc-pipe {
+  width: 100% !important;
+}
+
+.aic-lc:has(.lc-deco-fill) .lc-pipe .lc-node {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+}
+
+.aic-lc:has(.lc-deco-fill) .lc-pipe .lc-arrow {
+  flex: 0 0 36px !important;
+}
+
+/* Open source: expand the bridge comparison. */
+.aic-os:has(.os-deco-fill) .os-hero {
+  display: none !important;
+}
+
+.aic-os:has(.os-deco-fill) .os-right {
+  left: 5% !important;
+  width: 90% !important;
+}
+
+.aic-os:has(.os-deco-fill) .os-lead {
+  max-width: 76% !important;
+}
+
+.aic-os:has(.os-deco-fill) .os-bridge-wrap {
+  width: 100% !important;
+}
+
+.aic-os:has(.os-deco-fill) .os-bridge {
+  grid-template-columns: minmax(0, 1fr) 116px minmax(0, 1fr) !important;
+}
+
+/* Alignment: expand the framework and metrics. */
+.aic-al:has(.al-deco-fill) .al-hero {
+  display: none !important;
+}
+
+.aic-al:has(.al-deco-fill) .al-left {
+  width: 90% !important;
+}
+
+.aic-al:has(.al-deco-fill) .al-lead {
+  max-width: 76% !important;
+}
+
+/* Strategic resources: enlarge the resource composition panel. */
+.aic-res:has(.rs-deco-fill) .rs-hero {
+  display: none !important;
+}
+
+.aic-res:has(.rs-deco-fill) .rs-panel {
+  left: 5% !important;
+  width: 61% !important;
+}
+
+.aic-res:has(.rs-deco-fill) .rs-side {
+  left: 69% !important;
+  width: 26% !important;
+  padding: 34px 26px !important;
+  justify-content: center !important;
+  background: #f7f7f7 !important;
+  border-left: 4px solid var(--aic-accent) !important;
+}
+
+/* Ecosystem: enlarge the network view and retain a concise insight rail. */
+.aic-eco:has(.ec-deco-fill) .ec-hero {
+  display: none !important;
+}
+
+.aic-eco:has(.ec-deco-fill) .ec-panel {
+  left: 5% !important;
+  width: 61% !important;
+}
+
+.aic-eco:has(.ec-deco-fill) .ec-side {
+  left: 69% !important;
+  width: 26% !important;
+  padding: 34px 26px !important;
+  justify-content: center !important;
+  background: #f7f7f7 !important;
+  border-left: 4px solid var(--aic-accent) !important;
+}
+
+/* Regional analysis: expand the metrics matrix. */
+.aic-rgn:has(.rgn-deco-fill) .rgn-hero {
+  display: none !important;
+}
+
+.aic-rgn:has(.rgn-deco-fill) .rgn-col {
+  width: 90% !important;
+}
+
+.aic-rgn:has(.rgn-deco-fill) .rgn-lead {
+  max-width: 76% !important;
+}
+
+/* Company cases: use the entire width for the case argument. */
+.aic-cc:has(.cc-deco-fill) .cc-hero {
+  display: none !important;
+}
+
+.aic-cc:has(.cc-deco-fill) .cc-col {
+  width: 90% !important;
+}
+
+.aic-cc:has(.cc-deco-fill) .cc-lead {
+  max-width: 76% !important;
+}
+
+.aic-cc:has(.cc-deco-fill) .cc-metrics {
+  width: 100% !important;
+  gap: 28px !important;
+}
+
+/* About/methodology: turn the four rows into a balanced 2x2 matrix. */
+.aic-about:has(.ab-deco-fill) .ab-gallery {
+  display: none !important;
+}
+
+.aic-about:has(.ab-deco-fill) .ab-side {
+  width: 90% !important;
+}
+
+.aic-about:has(.ab-deco-fill) .ab-lead {
+  max-width: 76% !important;
+}
+
+.aic-about:has(.ab-deco-fill) .ab-cards {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px 24px !important;
+}
+
+.aic-about:has(.ab-deco-fill) .ab-card {
+  width: auto !important;
+  min-width: 0 !important;
+}

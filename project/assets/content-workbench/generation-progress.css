@@ -1,0 +1,2 @@
+#generation-progress{padding:12px;border:1px solid #dbdbdb;border-left:3px solid #c7000b;border-radius:5px;margin-top:12px;background:#fff;line-height:1.5}
+#generation-progress[hidden]{display:none}#generation-progress progress{display:block;width:100%;height:16px;margin:10px 0;accent-color:#c7000b}#generation-progress p{font-size:12px;overflow-wrap:anywhere;margin:6px 0}#generation-progress button{margin:5px 5px 5px 0}#generation-progress small{display:block;color:#666}

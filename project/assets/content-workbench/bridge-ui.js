@@ -1,0 +1,6 @@
+export function installBridgeUi(api){
+ const mode=document.querySelector('#ai-mode'),info=document.createElement('p');info.id='bridge-host-status';info.className='hint';info.setAttribute('role','status');mode.parentElement.before(info);
+ async function refresh(){try{const c=await api('bridge'),name=c.host?.label||c.host?.kind||'未记录';info.textContent=`生成宿主：${name} · ${c.available?'桥接入口已定位：'+c.detectedKind:c.error}。不会自动改用其他 Agent。`;const form=document.querySelector('#agent-form');if(form){const select=form.elements.kind;for(const[value,label]of [['deepseek','DeepSeek Harness'],['codex','Codex CLI']])if(![...select.options].some(o=>o.value===value))select.add(new Option(label,value));select.querySelector('[value="auto"]').textContent='自动：仅连接生成此项目的宿主';select.value=c.kind;const hint=document.querySelector('#config-body > .hint');if(hint)hint.textContent=info.textContent+' 入口定位不等于模型调用验证通过；模型与登录沿用绑定宿主。';}}catch{info.textContent='宿主状态暂不可读，请检查诊断控制台或模型 / Agent 设置。';}}
+ new MutationObserver(()=>{const form=document.querySelector('#agent-form');if(form&&!form.dataset.hostEnhanced){form.dataset.hostEnhanced='true';refresh();}}).observe(document.querySelector('#modal-body'),{childList:true,subtree:true});
+ refresh();return refresh;
+}

@@ -1,0 +1,7 @@
+interface:
+  display_name: "DashiAI-PPT-Huawei-Lite"
+  short_description: "精细脑图与直出双模式，支持跨页并发任务和可审阅内容适配的华为风格商业演示"
+  icon_small: "./assets/skill/dashiai-ppt-small.png"
+  icon_large: "./assets/skill/dashiai-ppt.png"
+  brand_color: "#C7000B"
+  default_prompt: "Use $dashiai-ppt-huawei-lite to create a Huawei-style presentation; first ask whether I want fine-grained mind-map review or direct generation."

@@ -1,0 +1,17 @@
+#notice{display:flex;align-items:center;gap:12px;max-width:min(850px,90vw);z-index:1000;line-height:1.6}
+#notice-message{white-space:pre-wrap;overflow-wrap:anywhere;max-height:160px;overflow:auto}
+#notice button{flex:none;color:#fff;background:transparent;border-color:#777;padding:4px 9px}
+#notice-close{font-size:20px;line-height:1}
+#diagnostics-count{display:inline-block;background:#f8e4e5;color:#c7000b;border-radius:10px;min-width:18px;text-align:center;padding:0 4px}
+.repair-entry{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0 15px}.repair-entry button{flex:1;font-size:12px;padding:8px 6px}.repair-entry small{color:#888;font-size:11px;width:100%}
+#diagnostics-dialog{width:min(1160px,96vw)}
+.diagnostics-toolbar{display:flex;align-items:center;gap:10px;padding-bottom:14px;flex-wrap:wrap}.diagnostics-toolbar label{display:flex;align-items:center;gap:8px;margin-right:auto}
+.diagnostics-grid{display:grid;grid-template-columns:310px minmax(0,1fr);gap:22px;max-height:68vh;overflow:auto}
+#diagnostics-list{overflow:auto;max-height:65vh;border-right:1px solid #eee;padding-right:12px}.diagnostic-item{display:block;width:100%;text-align:left;white-space:normal;margin-bottom:9px;padding:12px;line-height:1.7}.diagnostic-item span,.diagnostic-item small{display:block}.diagnostic-item small{color:#888;margin-top:6px}.diagnostic-item.active{border-color:#c7000b;background:#fff6f6}
+#diagnostics-detail{line-height:1.8}#diagnostics-detail h3{margin:0 0 4px}#diagnostics-detail h4{margin:15px 0 6px}.diagnostic-message{background:#f6f6f6;padding:12px;max-height:230px;overflow:auto;border-left:3px solid #c7000b}.diagnostic-actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+#repair-panel{padding:16px;margin-top:20px;border:1px solid #e0b8bb;border-radius:8px;background:#fffafa}#repair-panel label{display:block;margin-bottom:10px}#repair-slide{display:block;width:100%;margin-top:8px}#repair-panel>button{margin:10px 8px 0 0}
+@media(max-width:850px){.diagnostics-grid{grid-template-columns:1fr}#diagnostics-list{max-height:160px;border-right:0;border-bottom:1px solid #eee}}
+#diagnostics-action-status{font-size:12px;line-height:1.7;overflow-wrap:anywhere;color:#6b0000}
+#diagnostics-json{display:block;width:100%;font:12px/1.5 Consolas,Arial,'Microsoft YaHei',sans-serif;margin:8px 0;padding:8px;overflow-wrap:anywhere}
+#diagnostics-export-options button,#diagnostics-clear-confirm button{margin:4px;padding:7px}
+#diagnostics-clear-confirm{border:1px solid #ddd;background:#fafafa;padding:10px;margin:8px 0;font-size:12px;line-height:1.6}
