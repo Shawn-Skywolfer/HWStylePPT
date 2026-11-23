@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { layoutAvailableForPage } from './content/layout-policy.mjs';
 import {
   compactJson,
   getLayoutRecord,
@@ -148,7 +149,11 @@ function runGoal(goalArg, options = {}) {
   // JAD-workflow-friction:layout 容量确定放不下作者媒体数组时(仅此一种、可客观判定的场景),
   // 换用同主题内能容纳的候选 layout,而不是把无解的媒体错误抛回作者。每次替换都记入
   // layoutChanges,绝不无声改写——调用方必须能在输出里看到 from/to/reason。
-  const usedLayouts = new Set(slides.map(item => item?.layout).filter(Boolean));
+  const usedLayouts = new Map();
+  for (const item of slides) {
+    const layout = item?.layout;
+    if (layout) usedLayouts.set(layout, (usedLayouts.get(layout) || 0) + 1);
+  }
   const layoutChanges = [];
   const normalizedSlides = [];
   const slideResults = slides.map((slide, index) => {
@@ -166,8 +171,8 @@ function runGoal(goalArg, options = {}) {
           to: safe.layout,
           reason: `props.${safe.mismatch.key} 有 ${safe.mismatch.count} 项媒体,"${layout}" 没有能容纳的媒体槽位,已换为 "${safe.layout}"`,
         });
-        usedLayouts.delete(layout);
-        usedLayouts.add(safe.layout);
+        usedLayouts.set(layout, Math.max(0, (usedLayouts.get(layout) || 1) - 1));
+        usedLayouts.set(safe.layout, (usedLayouts.get(safe.layout) || 0) + 1);
         layout = safe.layout;
         normalized = safe.normalized;
       }
@@ -240,7 +245,7 @@ function trySafeLayoutForSlide(layout, props, usedLayouts) {
   const mismatch = findLayoutMediaMismatch(layout, props);
   if (!mismatch) return null;
   for (const candidateLayout of findSafeLayoutCandidates(layout, mismatch)) {
-    if (usedLayouts.has(candidateLayout)) continue;
+    if (!layoutAvailableForPage(candidateLayout, usedLayouts)) continue;
     const attempt = normalizeProps(candidateLayout, props);
     if (!attempt.errors?.length) return { layout: candidateLayout, normalized: attempt, mismatch };
   }

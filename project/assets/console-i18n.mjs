@@ -1,5 +1,6 @@
 /* Console chrome only. Never translate slide content, form values or raw logs. */
 export const CONSOLE_EN = {
+ '文字宽度':'Text width','恢复自适应':'Fit to layout',
  '查看并确认关系调整':'Review relationship changes','查看需确认的关系变化':'Review relationship changes',
  '插入':'Insert','查找':'Find','编辑':'Edit','删除':'Delete','应用':'Apply','保存':'Save','取消':'Cancel','关闭':'Close','复制':'Copy','恢复':'Reset','替换':'Replace','可选':'Optional',
  '文本框':'Text box','文字':'Text','内容块':'Content block','矩形':'Rectangle','图形':'Shape','连线':'Line','箭头':'Arrow','图片':'Image','图标':'Icon','表格':'Table','图表':'Chart','模块':'Module',

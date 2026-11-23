@@ -27,7 +27,7 @@ import {deleteBlockPlans} from './layout-blocks.mjs';
 import {applyConsoleContent} from './console-content.mjs';
 import {contentRoleNotice} from '../workflow/content-field-roles.mjs';
 import {adaptWithRenderedValidation} from '../content/adaptation-execution.mjs';
-import {layoutAvailableForPage,neighborLayouts,neighborPageIds} from '../content/layout-policy.mjs';
+import {layoutAvailableForPage,layoutUsageCount,layoutUsageFromSlides,neighborLayouts,neighborPageIds,FIXED_LAYOUT_MAX_USES} from '../content/layout-policy.mjs';
 import {layoutRuntime,requireLayoutProtocol} from './layout-runtime.mjs';
 import {canonicalLayoutInput} from '../../assets/layout-state-identity.mjs';
 
@@ -102,13 +102,13 @@ export function reconcileLayoutContent(base,input){
  }}
  return normalizeDocument(applyConsoleContent(doc,props));
 }
-export function available(base,input){const document=reconcileLayoutContent(base,input),used=new Set(base.vm?.slides.filter(s=>s.id!==input.slideId).map(s=>s.layout));let catalog;try{catalog=contentCandidates(document.slides[0],document,{hwVariants:input.layout&&input.targetVariant?{[input.layout]:String(input.targetVariant)}:{}});}catch(error){catalog={candidates:[],unavailableReason:error.message};}
+export function available(base,input){const document=reconcileLayoutContent(base,input),usage=layoutUsageFromSlides(base.vm?.slides,{excludeId:input.slideId});let catalog;try{catalog=contentCandidates(document.slides[0],document,{hwVariants:input.layout&&input.targetVariant?{[input.layout]:String(input.targetVariant)}:{}});}catch(error){catalog={candidates:[],unavailableReason:error.message};}
  const neighbors=neighborLayouts(base.vm?.slides||[],input.slideId);
  // ICON choices are reversible visual state, not a constraint forcing all
  // future layouts to have ICON slots. Neutral snapshots retain those choices.
- return {document,unavailableReason:catalog.unavailableReason,candidates:catalog.candidates.filter(c=>!neighbors.has(c.layout)&&layoutAvailableForPage(c.layout,used))};}
+ return {document,unavailableReason:catalog.unavailableReason,candidates:catalog.candidates.filter(c=>!neighbors.has(c.layout)&&layoutAvailableForPage(c.layout,usage))};}
 function adaptationTarget(base,input,document){
- const neighbors=neighborLayouts(base.vm?.slides||[],input.slideId),used=new Set(base.vm?.slides.filter(s=>s.id!==input.slideId).map(s=>s.layout)),target=input.targetVariant&&input.layout===base.modelSlide.layout?hwVariantTarget(document.slides[0],document,input.layout,input.targetVariant):adaptationTargets(document.slides[0],document).find(t=>t.id===input.layout&&!neighbors.has(t.id)&&layoutAvailableForPage(t.id,used));
+ const neighbors=neighborLayouts(base.vm?.slides||[],input.slideId),usage=layoutUsageFromSlides(base.vm?.slides,{excludeId:input.slideId}),target=input.targetVariant&&input.layout===base.modelSlide.layout?hwVariantTarget(document.slides[0],document,input.layout,input.targetVariant):adaptationTargets(document.slides[0],document).find(t=>t.id===input.layout&&!neighbors.has(t.id)&&layoutAvailableForPage(t.id,usage));
  if(!target){const notice=contentRoleNotice(input.layout);if(notice)throw new WorkbenchError(notice,422,'LAYOUT_FIELD_ROLE_MISMATCH');fail('目标版式不是当前内容、数据、媒体与 ICON 的可用适配候选。请重新读取版式；原页未改动。','LAYOUT_TARGET_UNAVAILABLE');}
  if(target.requiresRoleChange&&input.allowRoleChange!==true)fail('目标为表格版式，请明确同意转换为表格结构。未调用模型，原页保持不变。','LAYOUT_ROLE_APPROVAL_REQUIRED');
  assertRelationApproval(document,target,{allowRelationChange:input.allowRelationChange===true});
@@ -124,7 +124,7 @@ function keepHistoryContent(root,base,input,target){const layout=target.modelSli
  const found=available(base,{...input,layout,targetVariant:target.modelSlide.props.variant}),candidate=found.candidates.find(c=>c.layout===layout&&(!hwDefinition(layout)||String(c.props.variant)===String(target.modelSlide.props.variant)));return candidate?{document:found.document,candidate}:null;
 }
 function historyInfo(root,base,input){const history=pageVersions(root,base);return {original:history.original,notice:history.notice,versions:history.entries.map(e=>{const s=e.artifact.modelSlide;let canKeepCurrent=false;try{canKeepCurrent=!!keepHistoryContent(root,base,input,e.artifact);}catch{}return {id:e.id,at:e.at,layout:s.layout,variant:s.props.variant??null,title:s.props.title||e.artifact.document?.slides[0]?.title||'',label:inspectLayout(s.layout,{compact:true}).label||s.layout,original:e.id===history.original,canKeepCurrent};})};}
-function restorePlan(root,base,input){if(input.restoreAcknowledged!==true)fail('请先确认恢复方式；未修改当前页。');const target=requirePageVersion(root,base,input.restoreArtifactId),layout=target.modelSlide.layout;if(layout!==input.layout)fail('恢复目标与历史快照不一致。');if(/^theme17_page/.test(layout)&&base.vm.slides.some(s=>s.id!==input.slideId&&s.layout===layout))fail('该固定版式已被其他页使用，不能重复恢复；其他页不会被修改。');const before=reconcileLayoutContent(base,input);let document,candidate;
+function restorePlan(root,base,input){if(input.restoreAcknowledged!==true)fail('请先确认恢复方式；未修改当前页。');const target=requirePageVersion(root,base,input.restoreArtifactId),layout=target.modelSlide.layout;if(layout!==input.layout)fail('恢复目标与历史快照不一致。');if(/^theme17_page/.test(layout)&&layoutUsageCount(layout,layoutUsageFromSlides(base.vm.slides,{excludeId:input.slideId}))>=FIXED_LAYOUT_MAX_USES)fail('该固定版式已被其他页使用两次，不能再次恢复；其他页不会被修改。');const before=reconcileLayoutContent(base,input);let document,candidate;
  if(input.restoreMode==='keep-content'){const found=keepHistoryContent(root,base,input,target);if(!found)fail('当前内容不满足该历史版式的原稿容量，不能无损恢复。可明确选择恢复当时的页面快照，或取消后手动整理内容。');({document,candidate}=found);}
  else if(input.restoreMode==='snapshot'){const props=structuredClone(target.modelSlide.props);for(const k of Object.keys(props))if(k.startsWith('editor'))delete props[k];document=hwDefinition(layout)?importHwLayoutContent({...target.modelSlide,props},{},root):structuredClone(target.document);candidate={layout,props,nativeHw:!!hwDefinition(layout),titlePaths:target.mapping.titlePaths,blocks:target.mapping.blocks,plan:target.mapping.visualPlan};}
  else fail('请选择保留当前内容换版，或恢复当时页面快照。');

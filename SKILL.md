@@ -32,7 +32,7 @@ DashiAI-PPT-Huawei-Lite 只保留 Theme17 华为风格。新任务首先在 Agen
 
 ## 版本
 
-当前版本: `0.19.3-overlap-guard`
+当前版本: `0.19.4-layout-reuse-text-width`
 
 候选应用时若当前页已有新编辑，明确选择保留当前页或替换改动并应用；替换前保存最新页面用于撤销，不重新调用 AI。应用与保存期间立即显示状态并防止重复点击。仅缓存、传输标识及空样式默认值不构成编辑冲突；真实文字、图片、数据和样式变化仍须保护。
 
@@ -182,7 +182,7 @@ node <skill-root>/scripts/check_latest_version.mjs
 - 面向用户交付的 deck 默认不显示风格/主题切换选项;风格切换只保留在内部调试 demo 页面。用户明确要求保留主题切换时,在 goal 顶层写 `preview: {"themeSwitcher": true}`。
 - 不手写自由 HTML slide;面向用户交付的每页必须写 `layout` + `props`。`role` 只允许在草稿阶段辅助选页,渲染前必须换成具体 `layout`。
 - Theme17 的前 5 页 `theme17_page001` 到 `theme17_page005` 是封面候选。一个 deck 只能选择 1 页作为封面；正文页从第 6 页以后选择。
-- 传统 `theme17_pageNNN` 固定模板仍要求每套 layout 唯一。`theme17_content_*` 是由内容与关系驱动的自适应契约，明确允许复用；不要为了强行“每页不同”而把流程页换成无关的方法论、指标或案例模板。不得用改名伪造新布局。
+- 传统 `theme17_pageNNN` 固定模板同一 layout 全篇最多使用两次。`theme17_content_*` 是由内容与关系驱动的自适应契约，明确允许复用；不要为了强行“每页不同”而把流程页换成无关的方法论、指标或案例模板。不得用改名伪造新布局。
 - 面向用户交付的 deck 不能只写 `role` 后依赖页面默认文案。除非用户明确要默认 demo,每一页可见内容都必须写和用户主题对应的 `props` 文案。
 - 优先只写 `layout:query` / `inspect:layout` 暴露的文案字段。字段是对象或数组时按 `fillPlan` 和 `propShapes` 填内部 key。`copyKeys` 已展开嵌套路径(如 `copy.quote`、`items[].label`),按列出的路径直接填。
 - `inspect:layout` 标 `contentLocked: true` 的页正文由组件固定、props 填不进:换一页能填正文的布局,或仅当用户接受其默认正文时使用。数组按 `fillPlan.arrays[].visibleCount` 填满可见项;`decorativeKeys` 是装饰位,不要填。
