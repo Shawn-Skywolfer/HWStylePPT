@@ -1,9 +1,11 @@
 {
   "name": "dashiai-ppt-huawei-lite-runtime",
-  "version": "0.19.3-overlap-guard",
+  "version": "0.19.4-layout-reuse-text-width",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "content": "node scripts/content-workbench.mjs",
     "test:content": "node --test tests/content/*.test.mjs",

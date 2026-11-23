@@ -7,7 +7,7 @@ import {hwDefinition} from '../src/components/hw/contracts.mjs';
 import {validateHwProps} from '../assets/hw-template-view.mjs';
 import {validateChartSeries} from '../assets/chart-item-contracts.mjs';
 import {numericDisplayIssues} from './workflow/content-field-roles.mjs';
-import {adjacentLayoutIssues} from './content/layout-policy.mjs';
+import {adjacentLayoutIssues,FIXED_LAYOUT_MAX_USES} from './content/layout-policy.mjs';
 // 与预算生成同一把尺:视觉宽度折算(全角=1、半角=0.5),见 copy-contract.mjs(issue #15)。
 import { charLength } from './workflow/copy-contract.mjs';
 import {
@@ -159,8 +159,8 @@ function pushUniqueErrors(errors, candidates) {
 
 function validateUniqueLayouts(layoutUsages, errors) {
   for (const [layout, slides] of layoutUsages.entries()) {
-    if (slides.length <= 1 || getLayoutRecord(layout)?.page.reusable===true) continue;
-    errors.push(`deck field slides: duplicate layout ${layout} used on slides ${slides.join(', ')}; choose a unique layout for each slide`);
+    if (slides.length <= FIXED_LAYOUT_MAX_USES || getLayoutRecord(layout)?.page.reusable===true) continue;
+    errors.push(`deck field slides: layout ${layout} used on ${slides.length} slides (${slides.join(', ')}); a fixed layout may be used at most twice per deck`);
   }
 }
 

@@ -3,6 +3,7 @@ import {contentCandidates} from '../content/catalog-match.mjs';
 import {hwDefinition} from '../../src/components/hw/contracts.mjs';
 import {manualHwInfo,prepareManualHwProps} from '../../assets/hw-manual-props.mjs';
 import {importHwLayoutContent} from './hw-layout-content.mjs';
+import {layoutAvailableForPage} from '../content/layout-policy.mjs';
 const clone=v=>structuredClone(v);
 const removable=(doc,id)=>doc.slides[0].blocks.find(b=>b.blockId===id);
 function remainingDocument(document,blockId){const doc=clone(document),s=doc.slides[0];s.blocks=s.blocks.filter(b=>b.blockId!==blockId);const isDeleted=id=>id===blockId||id==='block:'+blockId;s.board={...s.board,nodes:(s.board?.nodes||[]).filter(n=>!isDeleted(n.id)),edges:(s.board?.edges||[]).filter(e=>!isDeleted(e.from)&&!isDeleted(e.to))};return normalizeDocument(doc);}
@@ -17,7 +18,7 @@ export function deleteBlockPlans({document,modelSlide,sourceProps,mediaRoot,used
   remaining=remainingDocument(document,blockId);
  }else{if(document.slides[0].blocks.length<=1)return {deleted,plans:[],recommended:null,reason:'当前页只剩这一个内容块；没有可验证的空正文版式，原页保持不变。'};remaining=remainingDocument(document,blockId);}
  const recommended=plans[0]?.key;let reasons=[];
- try{for(const c of contentCandidates(remaining.slides[0],remaining).candidates){if(def&&c.layout===def.layout||plans.some(p=>p.layout===c.layout)||(/^theme17_page/.test(c.layout)&&usedLayouts.includes(c.layout))||(remaining.slides[0].visuals?.icons&&hwDefinition(c.layout)?.family!=='icon'&&!c.layout.startsWith('theme17_content_icon_')))continue;plans.push({key:c.layout,layout:c.layout,variant:c.props.variant==null?null:String(c.props.variant),document:remaining,candidate:c});}}catch(e){reasons.push(e.message);}
+ try{for(const c of contentCandidates(remaining.slides[0],remaining).candidates){if(def&&c.layout===def.layout||plans.some(p=>p.layout===c.layout)||(!layoutAvailableForPage(c.layout,usedLayouts))||(remaining.slides[0].visuals?.icons&&hwDefinition(c.layout)?.family!=='icon'&&!c.layout.startsWith('theme17_content_icon_')))continue;plans.push({key:c.layout,layout:c.layout,variant:c.props.variant==null?null:String(c.props.variant),document:remaining,candidate:c});}}catch(e){reasons.push(e.message);}
  const same=plans.find(p=>p.layout===modelSlide.layout);
  return {deleted,plans,recommended:recommended||same?.key||null,reason:recommended||same?'删除后使用可容纳剩余内容的同版式原稿档位，确认前原页不变。':'当前版式没有匹配剩余数量的档位；不会留空框或擅自重画，请选择下列已匹配版式，或取消。'+(plans.length?'':reasons.join('；'))};
 }

@@ -5,6 +5,7 @@ import { clone, digest, normalizeDocument, WorkbenchError,effectiveRole } from '
 import {planContentSlide} from './visual-plan.mjs';
 import {matchDeck} from './catalog-match.mjs';
 import {assertContentReady} from './content-requirements.mjs';
+import {FIXED_LAYOUT_MAX_USES} from './layout-policy.mjs';
 
 const layoutName = n => `theme17_page${String(n).padStart(3, '0')}`;
 function empty(value) {
@@ -35,7 +36,7 @@ function splitText(value, budget = 36) {
   if (chunk) chunks.push(chunk); return chunks;
 }
 export function compileContent(document, { projectId = '', confirmedId = '', legacyGoal = null,choices={},excluded={} } = {}) {
-  const content = normalizeDocument(document), used = new Set(), mappings = [], warnings = [];
+  const content = normalizeDocument(document), usage = new Map(), mappings = [], warnings = [];
   assertContentReady(content);
   const deckMatch=matchDeck(content,{choices,excluded});
   if (legacyGoal?.text && Object.keys(legacyGoal.text).length) throw new WorkbenchError('旧 goal 含有顶层 text 槽位覆盖，尚不能安全反推到内容块。原稿已完整保留，请由 Agent 将其迁移为中性内容稿，避免覆盖确认后的文字。', 422, 'LEGACY_TEXT_MAPPING_REQUIRED');
@@ -56,8 +57,9 @@ export function compileContent(document, { projectId = '', confirmedId = '', leg
       }
       if (slide.legacy.titlePath) authored.props[slide.legacy.titlePath] = slide.title;
       if (slide.legacy.conclusionPath) authored.props[slide.legacy.conclusionPath] = slide.conclusion;
-      if (used.has(authored.layout) && !getLayoutRecord(authored.layout)?.page.reusable) throw new WorkbenchError('旧项目存在重复布局，请在快速模式下使用原 goal 或手动选择布局。', 422);
-      used.add(authored.layout);
+      const authoredUses = usage.get(authored.layout) || 0;
+      if (authoredUses >= FIXED_LAYOUT_MAX_USES && !getLayoutRecord(authored.layout)?.page.reusable) throw new WorkbenchError('同一固定版式最多使用两次，旧项目已超过上限；请在快速模式下使用原 goal 或手动选择布局。', 422);
+      usage.set(authored.layout, authoredUses + 1);
       mappings.push({ slideId: slide.slideId, goalSlideId: slide.slideId, layout: authored.layout, blocks: slide.blocks.map(block => ({ blockId: block.blockId, paths: [`props.${block.origin.path.join('.')}`] })) });
       return authored;
     }
@@ -66,8 +68,8 @@ export function compileContent(document, { projectId = '', confirmedId = '', leg
     const isSection = ['section', 'transition', 'chapter'].includes(role);
     if (isCover || isSection) {
       if (slide.blocks.some(block => block.text || block.evidence || block.data != null)) throw new WorkbenchError(`第 ${index + 1} 页是封面/章节页，不能承载正文块。请改为正文页或移到后一页，避免丢失内容。`, 422);
-      layout = isCover ? layoutName(4) : [16, 46, 59, 68].map(layoutName).find(key => !used.has(key));
-      if (!layout || used.has(layout)) throw new WorkbenchError('封面只能有一页，章节页最多四页。', 422);
+      layout = isCover ? layoutName(4) : [16, 46, 59, 68].map(layoutName).find(key => !(usage.get(key) || 0));
+      if (!layout) throw new WorkbenchError('封面只能有一页，章节页最多四页。', 422);
       ({ props } = blankProps(layout));
       // These special templates only expose title/subtitle; do not submit inert legacy geometry arrays as content props.
       for(const key of Object.keys(props))if(props[key]&&typeof props[key]==='object')delete props[key];
@@ -84,7 +86,7 @@ export function compileContent(document, { projectId = '', confirmedId = '', leg
       const planned=deckMatch.matched.get(slide.slideId)||planContentSlide(slide);
       layout=planned.layout;props=planned.props;blockMappings=planned.blocks;visualPlan=planned.plan;titlePaths=planned.titlePaths;
     }
-    used.add(layout);
+    usage.set(layout, (usage.get(layout) || 0) + 1);
     mappings.push({ slideId: slide.slideId, goalSlideId: slide.slideId, layout,visualPlan,planningBoard:slide.board, titlePaths: titlePaths || (isCover ? ['props.titleL1', 'props.titleL2'] : ['props.title']), blocks: blockMappings });
     return { id: slide.slideId, key: slide.slideId, layout, props };
   });

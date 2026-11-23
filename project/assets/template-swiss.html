@@ -6464,6 +6464,27 @@ refreshRailCatalog();
       targetStatus.appendChild(resetTarget);
     }
     nextPanel.appendChild(targetStatus);
+    if(selectedTextTarget){
+      const widthRow = document.createElement('label');
+      widthRow.className = 'preview-text-width';
+      widthRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin:8px 0 12px;font-size:12px;';
+      widthRow.append(document.createTextNode(window.__deckI18n.ui('文字宽度')));
+      const widthInput = document.createElement('input');
+      widthInput.type = 'number'; widthInput.min = '120'; widthInput.max = '1400'; widthInput.step = '10';
+      const computedWidth = Number.parseFloat(getComputedStyle(selectedTextTarget).maxWidth);
+      const currentWidth = Number(getSelectedTypographyStyle(values).maxWidth) || (Number.isFinite(computedWidth) ? Math.round(computedWidth) : Math.round(selectedTextTarget.getBoundingClientRect().width));
+      widthInput.value = String(Math.max(120, Math.min(1400, currentWidth || 120)));
+      widthInput.setAttribute('aria-label', window.__deckI18n.ui('文字宽度'));
+      makePreviewControlKeyboardNeutral(widthInput);
+      widthInput.addEventListener('change', () => updateSelectedTypographyMaxWidth(widthInput.value));
+      const autoWidth = document.createElement('button');
+      autoWidth.type = 'button';
+      autoWidth.textContent = window.__deckI18n.ui('恢复自适应');
+      makePreviewControlKeyboardNeutral(autoWidth);
+      autoWidth.addEventListener('click', () => { updateSelectedTypographyMaxWidth(null); renderPropControls({ skipApply: true }); releasePreviewControlFocus(autoWidth); });
+      widthRow.append(widthInput, autoWidth);
+      nextPanel.appendChild(widthRow);
+    }
     renderShapeControlSection(nextPanel, slide, values);
     renderImageVisibilityControls(mediaSettings || nextPanel, imageVisibilitySpecs, values);
     controls.forEach(control => {
@@ -7426,10 +7447,12 @@ refreshRailCatalog();
     Object.entries(value).forEach(([targetId, style]) => {
       if(!targetId || !style || typeof style !== 'object' || Array.isArray(style)) return;
       const scale = Math.min(200, Math.max(10, Number(style.scale ?? 100) || 100));
+      const maxWidth = Number(style.maxWidth);
       const fontFamily = normalizeEditorFontFamily(style.fontFamily);
       const color = normalizeEditorTextColor(style.color);
       const normalized = {};
       if(scale !== 100) normalized.scale = scale;
+      if(Number.isFinite(maxWidth) && maxWidth >= 120 && maxWidth <= 1400) normalized.maxWidth = Math.round(maxWidth);
       if(fontFamily !== 'theme') normalized.fontFamily = fontFamily;
       if(color) normalized.color = color;
       if(Object.keys(normalized).length) result[targetId] = normalized;
@@ -7628,6 +7651,33 @@ refreshRailCatalog();
     pushSlidePropHistory(slide, before, next, `text-color:${selectedTypographyTargetId}`, opts);
   }
 
+  function updateSelectedTypographyMaxWidth(value, opts = {}){
+    if(!canEditDeck()) return;
+    const slide = getCurrentSlide();
+    if(!getSelectedTypographyTarget(slide)) return;
+    const width = Number(value);
+    const values = getSlidePropValues(slide);
+    const before = cloneHistorySnapshot(values);
+    const textStyles = normalizeEditorTextStyles(values.editorTextStyles);
+    const legacyId = typographyLegacyTargetId(slide, selectedTypographyElement);
+    const current = {...(textStyles[selectedTypographyTargetId] || textStyles[legacyId] || {})};
+    delete textStyles[selectedTypographyTargetId];
+    if(legacyId) delete textStyles[legacyId];
+    if(Number.isFinite(width) && width >= 120 && width <= 1400) current.maxWidth = Math.round(width);
+    else delete current.maxWidth;
+    if(Object.keys(current).length) textStyles[selectedTypographyTargetId] = current;
+    const next = {...values, editorTextStyles:textStyles};
+    typographyDrafts.set(slide.dataset.vmSlideId, {
+      ...(typographyDrafts.get(slide.dataset.vmSlideId) || {}),
+      editorTextStyles:textStyles,
+    });
+    slide.dataset.editorTextStyles = JSON.stringify(textStyles);
+    viewModel?.setProps?.(slide.dataset.vmSlideId, next);
+    window.__markOverviewThumbDirty?.(slide);
+    applyTypographyOverrides(slide, next);
+    pushSlidePropHistory(slide, before, next, `text-width:${selectedTypographyTargetId}`, opts);
+  }
+
   function typographyOriginalStyle(element){
     if(element.__dashiTypographyOriginal) return element.__dashiTypographyOriginal;
     const computed = getComputedStyle(element);
@@ -7640,6 +7690,8 @@ refreshRailCatalog();
       color: read('color'),
       fontFamily: read('font-family'),
       fill: read('fill'),
+      maxWidth: read('max-width'),
+      display: read('display'),
       baseFontSize: Number.parseFloat(computed.fontSize) || 16,
     };
     return element.__dashiTypographyOriginal;
@@ -7728,6 +7780,23 @@ refreshRailCatalog();
         if(element instanceof SVGElement) element.style.setProperty('fill', color, 'important');
       }
       if(fontFamily !== 'theme') element.style.setProperty('font-family', fontFamily, 'important');
+      const maxWidth = Number(targetStyle.maxWidth) || 0;
+      if(maxWidth){
+        element.style.setProperty('max-width', `${maxWidth}px`, 'important');
+        element.dataset.editorTextMaxWidth = '1';
+        const display = getComputedStyle(element).display;
+        if(display.startsWith('inline') && display !== 'inline-block'){
+          element.style.setProperty('display', 'inline-block', 'important');
+          element.dataset.editorTextWidthDisplay = '1';
+        }
+      }else if(element.dataset.editorTextMaxWidth === '1'){
+        restoreTypographyStyle(element, 'max-width', original.maxWidth);
+        if(element.dataset.editorTextWidthDisplay === '1'){
+          restoreTypographyStyle(element, 'display', original.display);
+          delete element.dataset.editorTextWidthDisplay;
+        }
+        delete element.dataset.editorTextMaxWidth;
+      }
       if(color) element.classList.remove('editor-auto-contrast-light');
       else applyAutomaticTextContrast(element, slide);
       element.dataset.editorTextTargetId = targetId;
